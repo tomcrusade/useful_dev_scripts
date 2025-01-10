@@ -9,15 +9,15 @@ import (
 	"time"
 )
 
-var instanceCheckMaxCount = 120
+var vultrInstanceCheckMaxCount = 120
 
 type CloudSvcVultr struct {
 	env      *entity.EnvCloudServer
 	vultrAPI *api_vultr.VultrAPI
 }
 
-func NewCloudSvcVultr(env *entity.EnvCloudServer) *CloudSvcVultr {
-	vultrRepo := api_vultr.NewVultrAPI(env)
+func NewCloudSvcVultr(env *entity.EnvCloudServer, tokenEnv *entity.EnvResourceToken) *CloudSvcVultr {
+	vultrRepo := api_vultr.NewVultrAPI(env, tokenEnv)
 	return &CloudSvcVultr{env, vultrRepo}
 }
 
@@ -34,7 +34,7 @@ func (uc *CloudSvcVultr) StartInstance() (*entity.VultrInstance, error) {
 	if chosenCloudVM == nil || chosenCloudVM.MainIP == "" {
 		config := entity.VultrAPIRequestCreateInstanceConfig{
 			Region:  strings.TrimSpace(uc.env.VmRegion),
-			Plan:    strings.TrimSpace(uc.env.VmVultrPlan),
+			Plan:    strings.TrimSpace(uc.env.VmResourcePlan),
 			Backups: "disabled",
 			Label:   strings.TrimSpace(uc.env.VmLabel),
 		}
@@ -126,13 +126,13 @@ func (uc *CloudSvcVultr) getISoID() (*entity.VultrISO, error) {
 		return nil, fmt.Errorf("failed to get iso list because: %w", err1)
 	}
 	for _, iso := range listOfISO {
-		if iso.Filename == strings.TrimSpace(uc.env.VmISoFilename) {
+		if iso.Filename == strings.TrimSpace(uc.env.VmISO) {
 			return &iso, nil
 		}
 	}
 	return nil, fmt.Errorf(
 		"failed to find iso key with filename: %s. ISO: %v",
-		uc.env.VmISoFilename,
+		uc.env.VmISO,
 		entity.ConvertToJSON(listOfISO),
 	)
 }
@@ -143,7 +143,7 @@ func (uc *CloudSvcVultr) getFirewallGroup() (*entity.VultrFirewallGroup, error) 
 		return nil, fmt.Errorf("failed to get firewall group list because: %w", err1)
 	}
 	for _, firewallGroup := range listOfFirewallGroup {
-		if firewallGroup.Description == strings.TrimSpace(uc.env.VmFirewallLabel) {
+		if firewallGroup.Description == strings.TrimSpace(uc.env.VmFirewall) {
 			return &firewallGroup, nil
 		}
 	}
@@ -156,11 +156,11 @@ func (uc *CloudSvcVultr) getSSHKeyID() (*entity.VultrSSHKey, error) {
 		return nil, fmt.Errorf("failed to get ssh keys because: %w", err1)
 	}
 	for _, sshKey := range sshKeys {
-		if sshKey.Name == strings.TrimSpace(uc.env.SSHKeyLabel) {
+		if sshKey.Name == strings.TrimSpace(uc.env.SSHKey) {
 			return &sshKey, nil
 		}
 	}
-	return nil, fmt.Errorf("failed to find ssh key with label: %s", uc.env.SSHKeyLabel)
+	return nil, fmt.Errorf("failed to find ssh key with label: %s", uc.env.SSHKey)
 }
 
 func (uc *CloudSvcVultr) createInstance(config entity.VultrAPIRequestCreateInstanceConfig) (
@@ -191,7 +191,7 @@ func (uc *CloudSvcVultr) waitUntilRunning(vm *entity.VultrInstance, currentCount
 		return updatedInstance, fmt.Errorf("failed to get instance %v because: %w", vm.ID, err3)
 	}
 
-	if currentCount == instanceCheckMaxCount && updatedInstance.PowerStatus != "running" && updatedInstance.MainIP != "0.0.0.0" {
+	if currentCount == vultrInstanceCheckMaxCount && updatedInstance.PowerStatus != "running" && updatedInstance.MainIP != "0.0.0.0" {
 		return updatedInstance, errors.New(
 			fmt.Sprintf(
 				"instance not started after %v checks, this is the latest power status: %v, status: %v, ip: %v",
@@ -322,7 +322,7 @@ func (uc *CloudSvcVultr) waitUntilAvailable(snapshot *entity.VultrSnapshot, curr
 	if err != nil {
 		return fmt.Errorf("failed to get snapshot %v because: %w", snapshot.ID, err)
 	}
-	if currentCount == instanceCheckMaxCount && updatedSnapshot.Status != "complete" {
+	if currentCount == vultrInstanceCheckMaxCount && updatedSnapshot.Status != "complete" {
 		return errors.New(
 			fmt.Sprintf(
 				"snapshot not active yet after %v checks, this is the latest status: %v",
@@ -391,7 +391,7 @@ func (uc *CloudSvcVultr) waitUntilTerminated(vm *entity.VultrInstance, currentCo
 	if err3 != nil {
 		return nil
 	}
-	if currentCount == instanceCheckMaxCount && deletedInstance.ID != "" {
+	if currentCount == vultrInstanceCheckMaxCount && deletedInstance.ID != "" {
 		return errors.New(
 			fmt.Sprintf(
 				"instance id %v not deleted after %v checks",

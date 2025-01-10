@@ -2,7 +2,14 @@ package entity
 
 type Env struct {
 	VPS     map[string]*EnvCloudServer `json:"vps"`
+	Tokens  *EnvResourceToken          `json:"tokens"`
 	Bastion map[string]*EnvBastion     `json:"bastion"`
+}
+
+type EnvResourceToken struct {
+	CloudflareAPI   string `json:"cloudflare_api,omitempty"`
+	DigitaloceanAPI string `json:"digitalocean_api,omitempty"`
+	VultrAPI        string `json:"vultr_api,omitempty"`
 }
 
 type EnvBastion struct {
@@ -14,15 +21,23 @@ type EnvBastion struct {
 }
 
 type EnvCloudServer struct {
-	TokenCloudflare      string   `json:"cloudflare_token,omitempty"`
-	TokenVultr           string   `json:"vultr_token"`
-	DomainName           string   `json:"domain_name"`
-	SubdomainName        string   `json:"subdomain_name,omitempty"`
-	SSHKeyLabel          string   `json:"ssh_key_label"`
-	VmLabel              string   `json:"vm_label"`
-	VmISoFilename        string   `json:"vm_iso_filename"`
-	VmFirewallLabel      string   `json:"vm_firewall_label,omitempty"`
-	VmBlockStoragesLabel []string `json:"vm_block_storages_label,omitempty"`
-	VmVultrPlan          string   `json:"vm_vultr_plan"`
-	VmRegion             string   `json:"vm_region"`
+	DomainName              string                `json:"domain_name"`
+	SubdomainName           string                `json:"subdomain_name,omitempty"`
+	SSHKey                  string                `json:"ssh_key"`
+	VmBrand                 EnvCloudServerVmBrand `json:"vm_brand"`
+	VmLabel                 string                `json:"vm_label"`
+	VmChooseSnapshotOverISO bool                  `json:"vm_choose_snapshot_over_iso,omitempty"`
+	VmISO                   string                `json:"vm_iso"`
+	VmFirewall              string                `json:"vm_firewall,omitempty"`
+	VmBlockStoragesLabel    []string              `json:"vm_block_storages_label,omitempty"`
+	VmBackupPlan            map[string]string     `json:"vm_backup_plan,omitempty"`
+	VmResourcePlan          string                `json:"vm_resource_plan"`
+	VmRegion                string                `json:"vm_region"`
 }
+
+type EnvCloudServerVmBrand string
+
+var (
+	EnvCloudServerVmBrandDigitalOcean EnvCloudServerVmBrand = "digitalocean"
+	EnvCloudServerVmBrandVultr        EnvCloudServerVmBrand = "vultr"
+)

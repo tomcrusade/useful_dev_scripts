@@ -43,7 +43,7 @@ func (handler *Stop) Args(cmd *cobra.Command, args []string) error {
 
 func (handler *Stop) RunE(_ *cobra.Command, args []string) error {
 	serverConfig := handler.env.VPS[args[0]]
-	vultrUseCase := usecase.NewCloudSvcVultr(serverConfig)
+	vultrUseCase := usecase.NewCloudSvcVultr(serverConfig, handler.env.Tokens)
 
 	return vultrUseCase.StopInstance()
 }

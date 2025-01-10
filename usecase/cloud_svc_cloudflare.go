@@ -8,12 +8,13 @@ import (
 
 type CloudSvcCloudflare struct {
 	env            *entity.EnvCloudServer
+	tokenEnv       *entity.EnvResourceToken
 	cloudflareRepo *api_cloudflare.CloudflareAPI
 }
 
-func NewCloudSvcCloudflare(env *entity.EnvCloudServer) *CloudSvcCloudflare {
-	cloudflareRepo := api_cloudflare.NewCloudflareAPI(env)
-	return &CloudSvcCloudflare{env, cloudflareRepo}
+func NewCloudSvcCloudflare(env *entity.EnvCloudServer, tokenEnv *entity.EnvResourceToken) *CloudSvcCloudflare {
+	cloudflareRepo := api_cloudflare.NewCloudflareAPI(env, tokenEnv)
+	return &CloudSvcCloudflare{env, tokenEnv, cloudflareRepo}
 }
 
 // --
