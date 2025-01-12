@@ -5,7 +5,6 @@ import (
 	"dev_scripts/repository/api_digitalocean"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -33,13 +32,12 @@ func (uc *CloudSvcDigitalocean) StartInstance() (*entity.DigitaloceanDroplet, er
 
 	if chosenCloudVM == nil {
 		var backupPolicy *api_digitalocean.DOCreateDropletRequestBackupPolicy
-		hasBackupPlan := len(uc.env.VmBackupPlan) > 0
+		hasBackupPlan := uc.env.VmBackupPlan != nil
 		if hasBackupPlan {
-			backupHour, _ := strconv.Atoi(strings.TrimSpace(uc.env.VmBackupPlan["hour"]))
 			backupPolicy = &api_digitalocean.DOCreateDropletRequestBackupPolicy{
-				Plan:    strings.TrimSpace(uc.env.VmBackupPlan["plan"]),
-				Weekday: strings.TrimSpace(uc.env.VmBackupPlan["weekday"]),
-				Hour:    backupHour,
+				Plan:    strings.TrimSpace(uc.env.VmBackupPlan.Plan),
+				Weekday: strings.TrimSpace(uc.env.VmBackupPlan.Weekday),
+				Hour:    uc.env.VmBackupPlan.Hour,
 			}
 		}
 		config := api_digitalocean.DOCreateDropletRequest{

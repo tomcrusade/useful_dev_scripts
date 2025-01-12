@@ -7,18 +7,19 @@ import (
 )
 
 type DOCreateDropletRequest struct {
-	Name         string                              `json:"name"`
-	Region       string                              `json:"region"`
-	Size         string                              `json:"size"`
-	Image        string                              `json:"image"`
-	SSHKeys      []string                            `json:"ssh_keys"`
-	Backups      bool                                `json:"backups"`
-	BackupPolicy *DOCreateDropletRequestBackupPolicy `json:"backup_policy,omitempty"`
-	IPv6         bool                                `json:"ipv6"`
-	Monitoring   bool                                `json:"monitoring"`
-	Tags         []string                            `json:"tags"`
-	UserData     string                              `json:"user_data"`
-	VPCUUID      string                              `json:"vpc_uuid"`
+	Name             string                              `json:"name"`
+	Region           string                              `json:"region"`
+	Size             string                              `json:"size"`
+	Image            string                              `json:"image"`
+	SSHKeys          []string                            `json:"ssh_keys,omitempty"`
+	Backups          bool                                `json:"backups,omitempty"`
+	BackupPolicy     *DOCreateDropletRequestBackupPolicy `json:"backup_policy,omitempty"`
+	IPv6             bool                                `json:"ipv6,omitempty"`
+	Monitoring       bool                                `json:"monitoring,omitempty"`
+	Tags             []string                            `json:"tags,omitempty"`
+	UserData         string                              `json:"user_data,omitempty"`
+	VPCUUID          string                              `json:"vpc_uuid,omitempty"`
+	WithDropletAgent bool                                `json:"with_droplet_agent,omitempty"`
 }
 
 type DOCreateDropletRequestBackupPolicy struct {
@@ -45,10 +46,10 @@ func (do *DigitaloceanAPI) CreateDroplets(param DOCreateDropletRequest) (
 	)
 
 	if response.Droplet != nil {
-		return response.Droplet, response.Links.Actions, err
+		return response.Droplet, response.Links.Actions, nil
 	}
 
-	return response.Droplets[0], response.Links.Actions, err
+	return nil, response.Links.Actions, err
 }
 
 type DOListDropletAPIRequest struct {
