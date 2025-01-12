@@ -40,8 +40,8 @@ type DigitaloceanDiskInfo struct {
 }
 
 type DigitaloceanDiskInfoSize struct {
-	Amount int `json:"amount"`
-	Unit   int `json:"unit"`
+	Amount int    `json:"amount"`
+	Unit   string `json:"unit"`
 }
 
 type DigitaloceanImage struct {
@@ -67,7 +67,7 @@ type DigitaloceanDroplet struct {
 	Memory           int                         `json:"memory"`
 	VCPUs            int                         `json:"vcpus"`
 	Disk             int                         `json:"disk"`
-	DiskInfo         DigitaloceanDiskInfo        `json:"disk_info"`
+	DiskInfo         []DigitaloceanDiskInfo      `json:"disk_info"`
 	Locked           bool                        `json:"locked"`
 	Status           string                      `json:"status"`
 	Kernel           *interface{}                `json:"kernel,omitempty"`
@@ -92,7 +92,7 @@ type DigitaloceanDropletNetworks struct {
 
 type DigitaloceanDropletNetwork struct {
 	IPAddress string `json:"ip_address,omitempty"`
-	Netmask   int    `json:"netmask,omitempty"`
+	Netmask   string `json:"netmask,omitempty"`
 	Gateway   string `json:"gateway,omitempty"`
 	Type      string `json:"type,omitempty"`
 }

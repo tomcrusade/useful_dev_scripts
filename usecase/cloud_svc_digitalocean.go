@@ -67,7 +67,7 @@ func (uc *CloudSvcDigitalocean) StartInstance() (*entity.DigitaloceanDroplet, er
 func (uc *CloudSvcDigitalocean) getRelatedVM() (*entity.DigitaloceanDroplet, error) {
 	instances, _, _, err2 := uc.api.ListDroplets(
 		api_digitalocean.DOListDropletAPIRequest{
-			Name: uc.env.VmLabel,
+			TagName: uc.env.VmLabel,
 		},
 	)
 	if err2 != nil {

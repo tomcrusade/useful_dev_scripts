@@ -4,6 +4,7 @@ import (
 	"dev_scripts/adapters"
 	"dev_scripts/entity"
 	"fmt"
+	"strings"
 )
 
 type DOCreateDropletRequest struct {
@@ -69,9 +70,23 @@ func (do *DigitaloceanAPI) ListDroplets(filter DOListDropletAPIRequest) (
 	*entity.DigitaloceanAPIResultMeta,
 	error,
 ) {
+	var params []string
+	if filter.Name != "" {
+		params = append(params, fmt.Sprintf("name=%s", filter.Name))
+	}
+	if filter.TagName != "" {
+		params = append(params, fmt.Sprintf("tag_name=%s", filter.TagName))
+	}
+
+	formattedParams := ""
+	if len(params) > 0 {
+		formattedParams = fmt.Sprintf("?%s", strings.Join(params, "&"))
+	}
+
 	response, err := adapters.CallApi[DOListDropletAPIResponse](
 		do.getAPICallParams(
-			adapters.HttpMethodGet, "/v2/droplets",
+			adapters.HttpMethodGet,
+			fmt.Sprintf("/v2/droplets%s", formattedParams),
 			filter,
 		),
 	)
