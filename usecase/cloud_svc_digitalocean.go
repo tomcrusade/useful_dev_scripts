@@ -127,13 +127,16 @@ func (uc *CloudSvcDigitalocean) createInstance(config api_digitalocean.DOCreateD
 		)
 	}
 
-	if err = uc.waitUntilRunning(instance.ID, actions[0].ID, 0, false); err != nil {
+	if instance, err = uc.waitUntilRunning(instance.ID, actions[0].ID, 0, false); err != nil {
 		return nil, err
 	}
 
 	return instance, nil
 }
-func (uc *CloudSvcDigitalocean) waitUntilRunning(dropletID int, dropletActionID int, currentCount int, isCompleted bool) error {
+func (uc *CloudSvcDigitalocean) waitUntilRunning(dropletID int, dropletActionID int, currentCount int, isCompleted bool) (
+	*entity.DigitaloceanDroplet,
+	error,
+) {
 	fmt.Print("waiting...")
 	time.Sleep(30 * time.Second)
 	fmt.Printf("instance running check #%v \n", currentCount)
@@ -141,7 +144,7 @@ func (uc *CloudSvcDigitalocean) waitUntilRunning(dropletID int, dropletActionID 
 	if !isCompleted {
 		action, err := uc.api.GetDropletAction(dropletID, dropletActionID)
 		if err != nil {
-			return fmt.Errorf(
+			return nil, fmt.Errorf(
 				"failed to get action from instance id %d with action id %d because: %w",
 				dropletID,
 				dropletActionID,
@@ -157,16 +160,24 @@ func (uc *CloudSvcDigitalocean) waitUntilRunning(dropletID int, dropletActionID 
 		},
 	)
 	if err != nil || len(instances) <= 0 {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"failed to get instance by tag %s because: %w",
 			uc.env.VmLabel,
 			err,
 		)
 	}
-	hasPublicIpAddress := instances[0].Networks.V4[0].IPAddress == ""
+	hasPublicIpAddress := false
+	for _, v4Network := range instances[0].Networks.V4 {
+		if v4Network.Type == "public" {
+			hasPublicIpAddress = v4Network.IPAddress == ""
+			if hasPublicIpAddress {
+				break
+			}
+		}
+	}
 
 	if currentCount == instanceCheckMaxCount && (!isCompleted || !hasPublicIpAddress) {
-		return errors.New(
+		return nil, errors.New(
 			fmt.Sprintf(
 				"instance id %d with action id %d not completed or has no ip after %v checks",
 				dropletID,
@@ -183,7 +194,7 @@ func (uc *CloudSvcDigitalocean) waitUntilRunning(dropletID int, dropletActionID 
 			dropletActionID,
 			instances[0].Networks.V4[0].IPAddress,
 		)
-		return nil
+		return instances[0], nil
 	}
 	return uc.waitUntilRunning(dropletID, dropletActionID, currentCount+1, isCompleted)
 }
