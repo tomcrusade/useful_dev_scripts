@@ -169,7 +169,7 @@ func (uc *CloudSvcDigitalocean) waitUntilRunning(dropletID int, dropletActionID 
 	hasPublicIpAddress := false
 	for _, v4Network := range instances[0].Networks.V4 {
 		if v4Network.Type == "public" {
-			hasPublicIpAddress = v4Network.IPAddress == ""
+			hasPublicIpAddress = v4Network.IPAddress != ""
 			if hasPublicIpAddress {
 				break
 			}

@@ -58,6 +58,7 @@ func (uc *CloudSvcCloudflare) UpdateDNS(domainName string, subdomainName string,
 			Name:    searchName,
 			Content: newIPAddress,
 			Type:    "A",
+			Proxied: dnsRecordList[0].Proxied,
 		},
 	)
 	if err != nil {
