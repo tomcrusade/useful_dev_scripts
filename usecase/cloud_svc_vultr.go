@@ -16,8 +16,8 @@ type CloudSvcVultr struct {
 	vultrAPI *api_vultr.VultrAPI
 }
 
-func NewCloudSvcVultr(env *entity.EnvCloudServer, tokenEnv *entity.EnvResourceToken) *CloudSvcVultr {
-	vultrRepo := api_vultr.NewVultrAPI(env, tokenEnv)
+func NewCloudSvcVultr(env *entity.EnvCloudServer) *CloudSvcVultr {
+	vultrRepo := api_vultr.NewVultrAPI(env)
 	return &CloudSvcVultr{env, vultrRepo}
 }
 

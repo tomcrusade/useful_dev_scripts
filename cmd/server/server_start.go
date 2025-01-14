@@ -37,8 +37,8 @@ func (handler *Start) Args(cmd *cobra.Command, args []string) error {
 			args[0],
 			knownServerNames,
 		)
-	} else if vps.VmBrand != entity.EnvCloudServerVmBrandDigitalOcean && vps.VmBrand != entity.EnvCloudServerVmBrandVultr {
-		return fmt.Errorf("server brand %s is not known", vps.VmBrand)
+	} else if vps.VmType != entity.EnvCloudServerVmBrandDigitalOcean && vps.VmType != entity.EnvCloudServerVmBrandVultr {
+		return fmt.Errorf("server brand %s is not known", vps.VmType)
 	}
 	return nil
 }
@@ -47,15 +47,15 @@ func (handler *Start) RunE(_ *cobra.Command, args []string) error {
 	vpsConfig := handler.env.VPS[args[0]]
 
 	mainIP := ""
-	if vpsConfig.VmBrand == entity.EnvCloudServerVmBrandVultr {
-		vultrUseCase := usecase2.NewCloudSvcVultr(vpsConfig, handler.env.Tokens)
+	if vpsConfig.VmType == entity.EnvCloudServerVmBrandVultr {
+		vultrUseCase := usecase2.NewCloudSvcVultr(vpsConfig)
 		chosenCloudVM, err := vultrUseCase.StartInstance()
 		if err != nil {
 			return err
 		}
 		mainIP = chosenCloudVM.MainIP
 	} else {
-		doUseCase := usecase2.NewCloudSvcDigitalocean(vpsConfig, handler.env.Tokens)
+		doUseCase := usecase2.NewCloudSvcDigitalocean(vpsConfig)
 		chosenDroplet, err := doUseCase.StartInstance()
 		if err != nil {
 			return err
@@ -69,13 +69,11 @@ func (handler *Start) RunE(_ *cobra.Command, args []string) error {
 	}
 
 	if mainIP != "" {
-		cloudflareUseCase := usecase2.NewCloudSvcCloudflare(vpsConfig, handler.env.Tokens)
-		if err := cloudflareUseCase.UpdateDNS(
-			vpsConfig.DomainName,
-			vpsConfig.SubdomainName,
-			mainIP,
-		); err != nil {
-			return err
+		for _, domain := range vpsConfig.Domains {
+			cloudflareUseCase := usecase2.NewCloudSvcCloudflare(domain)
+			if err := cloudflareUseCase.UpdateDNS(mainIP); err != nil {
+				return err
+			}
 		}
 	}
 

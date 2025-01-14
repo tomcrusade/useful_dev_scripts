@@ -9,21 +9,20 @@ import (
 )
 
 type CloudflareAPI struct {
-	env      *entity.EnvCloudServer
-	tokenEnv *entity.EnvResourceToken
+	env *entity.EnvCloudServerDomain
 }
 
 func (api *CloudflareAPI) getAPICallParams(method adapters.HttpMethod, urlPath string, requestParams interface{}) adapters.CallApiArgs {
 	return adapters.CallApiArgs{
 		FullPath:      fmt.Sprintf("https://api.cloudflare.com/client/v4%v", urlPath),
-		Token:         api.tokenEnv.CloudflareAPI,
+		Token:         api.env.APIToken,
 		Method:        method,
 		RequestParams: requestParams,
 	}
 }
 
-func NewCloudflareAPI(env *entity.EnvCloudServer, tokenEnv *entity.EnvResourceToken) *CloudflareAPI {
-	return &CloudflareAPI{env, tokenEnv}
+func NewCloudflareAPI(env *entity.EnvCloudServerDomain) *CloudflareAPI {
+	return &CloudflareAPI{env}
 }
 
 type CloudflareAPIResponse[data interface{}] struct {

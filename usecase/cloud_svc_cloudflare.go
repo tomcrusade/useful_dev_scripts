@@ -7,29 +7,28 @@ import (
 )
 
 type CloudSvcCloudflare struct {
-	env            *entity.EnvCloudServer
-	tokenEnv       *entity.EnvResourceToken
+	env            *entity.EnvCloudServerDomain
 	cloudflareRepo *api_cloudflare.CloudflareAPI
 }
 
-func NewCloudSvcCloudflare(env *entity.EnvCloudServer, tokenEnv *entity.EnvResourceToken) *CloudSvcCloudflare {
-	cloudflareRepo := api_cloudflare.NewCloudflareAPI(env, tokenEnv)
-	return &CloudSvcCloudflare{env, tokenEnv, cloudflareRepo}
+func NewCloudSvcCloudflare(env *entity.EnvCloudServerDomain) *CloudSvcCloudflare {
+	cloudflareRepo := api_cloudflare.NewCloudflareAPI(env)
+	return &CloudSvcCloudflare{env, cloudflareRepo}
 }
 
 // --
 
-func (uc *CloudSvcCloudflare) UpdateDNS(domainName string, subdomainName string, newIPAddress string) error {
-	searchName := domainName
-	if subdomainName != "" {
-		searchName = subdomainName + "." + domainName
+func (uc *CloudSvcCloudflare) UpdateDNS(newIPAddress string) error {
+	searchName := uc.env.Name
+	if uc.env.SubdomainName != "" {
+		searchName = uc.env.SubdomainName + "." + uc.env.Name
 	}
-	zoneList, err := uc.cloudflareRepo.GetZoneList(fmt.Sprintf("name=%s", domainName))
+	zoneList, err := uc.cloudflareRepo.GetZoneList(fmt.Sprintf("name=%s", uc.env.Name))
 	if err != nil {
 		return fmt.Errorf("failed to get dns zone list. Error: %v", err)
 	}
 	if len(zoneList) <= 0 {
-		return fmt.Errorf("no zone found for domain %s", domainName)
+		return fmt.Errorf("no zone found for domain %s", uc.env.Name)
 	}
 	fmt.Printf(
 		"Zone found : %s \n",
@@ -58,7 +57,7 @@ func (uc *CloudSvcCloudflare) UpdateDNS(domainName string, subdomainName string,
 			Name:    searchName,
 			Content: newIPAddress,
 			Type:    "A",
-			Proxied: dnsRecordList[0].Proxied,
+			Proxied: uc.env.IsProxied,
 		},
 	)
 	if err != nil {

@@ -16,8 +16,8 @@ type CloudSvcDigitalocean struct {
 	api *api_digitalocean.DigitaloceanAPI
 }
 
-func NewCloudSvcDigitalocean(env *entity.EnvCloudServer, tokenEnv *entity.EnvResourceToken) *CloudSvcDigitalocean {
-	return &CloudSvcDigitalocean{env, api_digitalocean.NewDigitaloceanAPI(env, tokenEnv)}
+func NewCloudSvcDigitalocean(env *entity.EnvCloudServer) *CloudSvcDigitalocean {
+	return &CloudSvcDigitalocean{env, api_digitalocean.NewDigitaloceanAPI(env)}
 }
 
 // --

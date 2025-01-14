@@ -7,19 +7,18 @@ import (
 )
 
 type DigitaloceanAPI struct {
-	env      *entity.EnvCloudServer
-	tokenEnv *entity.EnvResourceToken
+	env *entity.EnvCloudServer
 }
 
 func (do *DigitaloceanAPI) getAPICallParams(method adapters.HttpMethod, urlPath string, requestParams interface{}) adapters.CallApiArgs {
 	return adapters.CallApiArgs{
 		FullPath:      fmt.Sprintf("https://api.digitalocean.com%v", urlPath),
-		Token:         do.tokenEnv.DigitaloceanAPI,
+		Token:         do.env.VmTypeApiToken,
 		Method:        method,
 		RequestParams: requestParams,
 	}
 }
 
-func NewDigitaloceanAPI(env *entity.EnvCloudServer, tokenEnv *entity.EnvResourceToken) *DigitaloceanAPI {
-	return &DigitaloceanAPI{env, tokenEnv}
+func NewDigitaloceanAPI(env *entity.EnvCloudServer) *DigitaloceanAPI {
+	return &DigitaloceanAPI{env}
 }
