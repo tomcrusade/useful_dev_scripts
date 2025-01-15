@@ -29,6 +29,20 @@ type CloudflareDNSRecordUpdateParams struct {
 	TTL     int    `json:"ttl,omitempty"`
 }
 
+func (api *CloudflareAPI) CreateDNSRecord(dnsZone string, data CloudflareDNSRecordUpdateParams) (
+	entity.CloudflareDNSRecord,
+	error,
+) {
+	result, err := CallCloudflareApi[entity.CloudflareDNSRecord](
+		api.getAPICallParams(
+			adapters.HttpMethodPost,
+			fmt.Sprintf("/zones/%s/dns_records", dnsZone),
+			data,
+		),
+	)
+	return result.Data, err
+}
+
 func (api *CloudflareAPI) UpdateDNSRecord(dnsZone string, dnsRecord string, data CloudflareDNSRecordUpdateParams) (
 	entity.CloudflareDNSRecord,
 	error,

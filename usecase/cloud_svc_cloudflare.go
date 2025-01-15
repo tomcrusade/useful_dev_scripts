@@ -43,29 +43,45 @@ func (uc *CloudSvcCloudflare) UpdateDNS(newIPAddress string) error {
 		return fmt.Errorf("cannot find DNS record because: %v", err)
 	}
 	if len(dnsRecordList) <= 0 {
-		return fmt.Errorf("no DNS record found")
-	}
-	fmt.Printf(
-		"DNS record found : %s \n",
-		entity.ConvertToJSON[[]entity.CloudflareDNSRecord](dnsRecordList),
-	)
+		createDNSResult, err := uc.cloudflareRepo.CreateDNSRecord(
+			zoneList[0].ID,
+			api_cloudflare.CloudflareDNSRecordUpdateParams{
+				Name:    searchName,
+				Content: newIPAddress,
+				Type:    "A",
+				Proxied: uc.env.IsProxied,
+			},
+		)
+		if err != nil {
+			return fmt.Errorf("failed to create DNS record because: %v", err)
+		}
+		fmt.Printf(
+			"DNS record created : %s \n",
+			entity.ConvertToJSON[entity.CloudflareDNSRecord](createDNSResult),
+		)
+	} else {
+		fmt.Printf(
+			"DNS record found : %s \n",
+			entity.ConvertToJSON[[]entity.CloudflareDNSRecord](dnsRecordList),
+		)
 
-	updateDNSResult, err := uc.cloudflareRepo.UpdateDNSRecord(
-		zoneList[0].ID,
-		dnsRecordList[0].ID,
-		api_cloudflare.CloudflareDNSRecordUpdateParams{
-			Name:    searchName,
-			Content: newIPAddress,
-			Type:    "A",
-			Proxied: uc.env.IsProxied,
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to update DNS record because: %v", err)
+		updateDNSResult, err := uc.cloudflareRepo.UpdateDNSRecord(
+			zoneList[0].ID,
+			dnsRecordList[0].ID,
+			api_cloudflare.CloudflareDNSRecordUpdateParams{
+				Name:    searchName,
+				Content: newIPAddress,
+				Type:    "A",
+				Proxied: uc.env.IsProxied,
+			},
+		)
+		if err != nil {
+			return fmt.Errorf("failed to update DNS record because: %v", err)
+		}
+		fmt.Printf(
+			"DNS record updated to : %s \n",
+			entity.ConvertToJSON[entity.CloudflareDNSRecord](updateDNSResult),
+		)
 	}
-	fmt.Printf(
-		"DNS record updated to : %s \n",
-		entity.ConvertToJSON[entity.CloudflareDNSRecord](updateDNSResult),
-	)
 	return nil
 }
