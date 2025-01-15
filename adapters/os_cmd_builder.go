@@ -47,7 +47,7 @@ func (cmd OSCmdBuilder) RunWithInput(input string) (string, error) {
 	if len(cmd.args) > 0 {
 		combinedCmd += " " + strings.Join(cmd.args, " ")
 	}
-	executor := exec.Command("bash", "-c", combinedCmd)
+	executor := exec.Command("bash", "-lc", combinedCmd)
 
 	stdin, err := executor.StdinPipe()
 	if err != nil {
